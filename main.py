@@ -1,6 +1,7 @@
 import os
 from datetime import date
-
+import threading
+import webbrowser
 from flask import (
     Flask, render_template, request, redirect,
     url_for, send_file, flash
@@ -72,42 +73,81 @@ def has_template():
 
 def render_docx_template(template_path, context, output_path):
     """
-    用 python-docx 做占位符替换：
-    替换 {{NAME}}, {{DATE}}, {{SUMMARY}}, {{PLAN}}
+    占位符替换函数（稳定版）：
 
-    方案说明：
-    - 不再按 run 替换（Word 容易把占位符拆成多个 run，导致找不到完整字符串）
-    - 改为按 paragraph.text / cell.paragraph.text 级别处理，
-      用拼接后的整段文本做 replace，然后再回写回去。
-    - 会丢失这一段内部更细粒度的格式（比如一个段落里既有加粗又有普通字），
-      但占位符文本本身通常是整块纯文本，影响不大。
+    - 支持 {{NAME}}, {{DATE}}, {{SUMMARY}}, {{PLAN}}
+    - 对 SUMMARY / PLAN 做换行规范化，尽量避免多余空行 / 软回车
+    - 只按 paragraph.text / cell.paragraph.text 进行替换，不用 run，也不用 _document
     """
+
     doc = Document(template_path)
 
+    def normalize_multiline(text: str) -> str:
+        """规范化多行文本，去掉多余空行，避免 Word 里出现一堆空行 / 软回车"""
+        if not text:
+            return ""
+
+        # 统一换行符
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
+
+        lines = text.split("\n")
+
+        # 去掉首尾全空行
+        while lines and not lines[0].strip():
+            lines.pop(0)
+        while lines and not lines[-1].strip():
+            lines.pop()
+
+        # 压缩中间的连续空行：多个空行 → 一个空行
+        cleaned = []
+        blank = False
+        for line in lines:
+            if not line.strip():
+                if blank:
+                    # 已经有一个空行了，后面的连续空行丢弃
+                    continue
+                blank = True
+                cleaned.append("")
+            else:
+                blank = False
+                cleaned.append(line)
+
+        return "\n".join(cleaned)
+
+    # 先规范化 SUMMARY / PLAN 的内容
+    for key in ("SUMMARY", "PLAN"):
+        if key in context and isinstance(context[key], str):
+            context[key] = normalize_multiline(context[key])
+
     def replace_in_paragraph(paragraph):
+        """在一个段落内做占位符替换"""
         if not paragraph.text:
             return
+
         text = paragraph.text
         new_text = text
         for key, value in context.items():
             placeholder = "{{" + key + "}}"
             if placeholder in new_text:
                 new_text = new_text.replace(placeholder, value)
+
         if new_text != text:
+            # 这里直接赋值 paragraph.text
+            # python-docx 会自动重建 runs，足够我们的纯文本场景
             paragraph.text = new_text
 
     # 1. 普通段落
     for p in doc.paragraphs:
         replace_in_paragraph(p)
 
-    # 2. 表格中的单元格段落
+    # 2. 表格里的段落
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
                 for p in cell.paragraphs:
                     replace_in_paragraph(p)
 
-    # 3. 如果模板里在页眉/页脚中也用了占位符，可以顺便处理
+    # 3. 页眉 / 页脚（如果你在那里面也用到了占位符）
     for section in doc.sections:
         header = section.header
         for p in header.paragraphs:
@@ -264,7 +304,14 @@ def delete_report(report_id):
     flash("周报已删除", "success")
     return redirect(url_for("index"))
 
+def open_browser():
+    webbrowser.open("http://127.0.0.1:5000/")
+
+
 if __name__ == "__main__":
     with app.app_context():
         init_db()
+        
+    # 启动自动打开浏览器（延迟 1 秒，不然服务器还没启动）
+    threading.Timer(1.0, open_browser).start()
     app.run(debug=True)
