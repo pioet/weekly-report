@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <title>周报管理</title>
+    <title>周报小助手</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <style>
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -146,7 +147,7 @@
 <body>
 <header>
     <div>
-        <a href="{{ url_for('index') }}"><strong>周报管理</strong></a>
+        <a href="{{ url_for('index') }}"><strong>周报小助手</strong></a>
     </div>
     <nav>
         <a href="{{ url_for('index') }}">周报列表</a>
