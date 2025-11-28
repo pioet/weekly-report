@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>{{ "编辑周报" if report else "新建周报" }}</h2>
+
+    <form method="post">
+        <div class="inline-fields">
+            <div class="field">
+                <label for="name">姓名 (NAME)</label>
+                <input type="text" id="name" name="name" value="{{ default_name or '' }}">
+            </div>
+
+            <div class="field">
+                <label for="date">日期 (DATE)</label>
+                <input type="text" id="date" name="date" value="{{ default_date or '' }}" placeholder="YYYY-MM-DD">
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="summary">本周工作记录 (SUMMARY)</label>
+            <div class="md-container">
+                <div class="md-editor">
+                    <textarea id="summary" name="summary" rows="30">{{ report.summary if report else "" }}</textarea>
+                </div>
+                <!-- <div class="md-preview">
+                    <div>预览（简易渲染，仅对 # 标题着色）：</div>
+                    <div id="summary-preview" class="md-preview-box"></div>
+                </div> -->
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="plan">下周计划 (PLAN)</label>
+            <div class="md-container">
+                <div class="md-editor">
+                    <textarea id="plan" name="plan" rows="15">{{ report.plan if report else "" }}</textarea>
+                </div>
+                <!-- <div class="md-preview">
+                    <div>预览（简易渲染，仅对 # 标题着色）：</div>
+                    <div id="plan-preview" class="md-preview-box"></div>
+                </div> -->
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">保存</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">返回列表</a>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // 使用 marked.js 做完整 markdown 渲染
+    // 如需换行支持，可开启 breaks
+    if (window.marked) {
+        marked.setOptions({
+            breaks: true
+        });
+    }
+
+    function renderMarkdown(text) {
+        if (!window.marked) {
+            // 兜底：如果 marked 没加载成功，就直接转义
+            return (text || "").replace(/&/g, "&amp;")
+                               .replace(/</g, "&lt;")
+                               .replace(/>/g, "&gt;")
+                               .replace(/\n/g, "<br>");
+        }
+        return marked.parse(text || "");
+    }
+
+    function bindPreview(textareaId, previewId) {
+        const ta = document.getElementById(textareaId);
+        const pv = document.getElementById(previewId);
+
+        function update() {
+            pv.innerHTML = renderMarkdown(ta.value);
+        }
+
+        ta.addEventListener("input", update);
+        update(); // 初始化
+    }
+
+    bindPreview("summary", "summary-preview");
+    bindPreview("plan", "plan-preview");
+</script>
+{% endblock %}
+

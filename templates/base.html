@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>周报管理</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+        }
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header a {
+            color: #ecf0f1;
+            text-decoration: none;
+            margin-right: 12px;
+        }
+        main {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .inline-fields {
+            display: flex;
+            gap: 16px;
+        }
+        .inline-fields .field {
+            flex: 1;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-link {
+            background: transparent;
+            color: #3498db;
+        }
+        .btn-warning {
+            background: #e67e22;
+            color: white;
+        }
+        .card {
+            background: white;
+            border-radius: 6px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-bottom: 16px;
+        }
+        .field {
+            margin-bottom: 12px;
+        }
+        .field label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .field input[type="text"],
+        .field input[type="date"],
+        .field textarea {
+            width: 100%;
+            padding: 6px 8px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        .messages {
+            margin-bottom: 16px;
+        }
+        .message {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .message-success {
+            background: #eafaf1;
+            color: #1e8449;
+        }
+        .message-error {
+            background: #fdecea;
+            color: #c0392b;
+        }
+
+        /* markdown preview */
+        .md-container {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .md-editor,
+        .md-preview {
+            flex: 1;
+        }
+        .md-preview-box {
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px;
+            white-space: pre-wrap;
+            font-family: "JetBrains Mono", Menlo, Consolas, monospace;
+            font-size: 13px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        .md-header {
+            font-weight: bold;
+        }
+        .md-header.level-1 {
+            font-size: 18px;
+            color: #c0392b;
+        }
+        .md-header.level-2 {
+            font-size: 16px;
+            color: #2980b9;
+        }
+        .md-header.level-3 {
+            font-size: 15px;
+            color: #27ae60;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<header>
+    <div>
+        <a href="{{ url_for('index') }}"><strong>周报管理</strong></a>
+    </div>
+    <nav>
+        <a href="{{ url_for('index') }}">周报列表</a>
+        <a href="{{ url_for('new_report') }}">新建周报</a>
+        <a href="{{ url_for('settings') }}">设置</a>
+    </nav>
+</header>
+<main>
+    <div class="messages">
+        {% with msgs = get_flashed_messages(with_categories=True) %}
+            {% if msgs %}
+                {% for category, msg in msgs %}
+                    <div class="message message-{{ category }}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    {% block content %}{% endblock %}
+</main>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

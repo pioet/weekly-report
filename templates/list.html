@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h2>周报列表</h2>
+        <a href="{{ url_for('new_report') }}" class="btn btn-primary">新建周报</a>
+    </div>
+
+    {% if reports %}
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <thead>
+            <tr style="background:#ecf0f1;">
+                <th style="padding:8px; text-align:left;">日期</th>
+                <th style="padding:8px; text-align:left;">姓名</th>
+                <th style="padding:8px; text-align:left;">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in reports %}
+                <tr style="border-top:1px solid #ddd;">
+                    <td style="padding:8px;">{{ r.date }}</td>
+                    <td style="padding:8px;">{{ r.name or "（未填写）" }}</td>
+                    <td style="padding:8px;">
+                        <a class="btn btn-link" href="{{ url_for('edit_report', report_id=r.id) }}">编辑</a>
+                        <a class="btn btn-warning" href="{{ url_for('export_report', report_id=r.id) }}">导出为 Word</a>
+
+                        <form action="{{ url_for('delete_report', report_id=r.id) }}"
+                            method="post"
+                            style="display:inline;"
+                            onsubmit="return confirm('确定要删除这条周报吗？');">
+                            <button type="submit" class="btn btn-secondary">删除</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>当前暂无周报，点击右上角“新建周报”开始。</p>
+    {% endif %}
+</div>
+{% endblock %}

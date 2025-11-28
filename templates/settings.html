@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>设置</h2>
+
+    <p>1. 上传 Word 模板（.docx），模板中使用以下占位符：</p>
+    <ul>
+        <li><code>{{ "{{NAME}}" }}</code></li>
+        <li><code>{{ "{{DATE}}" }}</code></li>
+        <li><code>{{ "{{SUMMARY}}" }}</code></li>
+        <li><code>{{ "{{PLAN}}" }}</code></li>
+    </ul>
+
+    <p>2. 设置导出文件命名格式，可使用 <code>{NAME}</code> 和 <code>{DATE}</code> 这两个变量。</p>
+
+    <p>例如：<code>{DATE}_{NAME}_周报.docx</code></p>
+
+    <form method="post" enctype="multipart/form-data">
+        <div class="field">
+            <label for="filename_pattern">文件命名格式</label>
+            <input type="text" id="filename_pattern" name="filename_pattern"
+                   value="{{ config.filename_pattern }}">
+        </div>
+
+        <div class="field">
+            <label for="template_file">Word 模板文件 (.docx)</label>
+            <input type="file" id="template_file" name="template_file" accept=".docx">
+            {% if template_exists %}
+                <p style="font-size:13px; color:#27ae60;">当前已上传模板文件。</p>
+            {% else %}
+                <p style="font-size:13px; color:#c0392b;">尚未上传模板文件。</p>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">保存设置</button>
+    </form>
+</div>
+{% endblock %}
