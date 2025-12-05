@@ -14,6 +14,7 @@
                 <th style="padding:8px; text-align:left;">日期</th>
                 <th style="padding:8px; text-align:left;">姓名</th>
                 <th style="padding:8px; text-align:left;">操作</th>
+                <th style="padding:8px; text-align:left;">备注</th>
             </tr>
             </thead>
             <tbody>
@@ -29,12 +30,23 @@
                               style="display:inline;">
                             <button type="submit" class="btn btn-primary">复制</button>
                         </form>
-
                         <form action="{{ url_for('delete_report', report_id=r.id) }}"
                             method="post"
                             style="display:inline;"
                             onsubmit="return confirm('确定要删除这条周报吗？');">
                             <button type="submit" class="btn btn-secondary">删除</button>
+                        </form>
+                    </td>
+                    <td style="padding:8px;">
+                        <form action="{{ url_for('update_remark', report_id=r.id) }}"
+                              method="post"
+                              style="display:flex; gap:8px; align-items:center;">
+                            <input type="text"
+                                   name="remark"
+                                   value="{{ remark_map.get(r.id, '') }}"
+                                   style="flex:1; padding:6px; border:1px solid #ccc; border-radius:4px;"
+                                   placeholder="添加备注">
+                            <button type="submit" class="btn btn-secondary">保存</button>
                         </form>
                     </td>
                 </tr>

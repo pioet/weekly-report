@@ -39,6 +39,20 @@ class WeeklyReport(db.Model):
     updated_at = db.Column(db.DateTime, onupdate=func.now(), server_default=func.now())
 
 
+class ReportRemark(db.Model):
+    __tablename__ = "report_remarks"
+
+    id = db.Column(db.Integer, primary_key=True)
+    report_id = db.Column(db.Integer, db.ForeignKey("weekly_reports.id"), unique=True, nullable=False)
+    content = db.Column(db.Text, nullable=True)
+
+    report = db.relationship(
+        "WeeklyReport",
+        backref=db.backref("remark", uselist=False, cascade="all, delete-orphan"),
+        single_parent=True,
+    )
+
+
 class ExportConfig(db.Model):
     __tablename__ = "export_config"
 
@@ -174,7 +188,13 @@ def render_docx_template(template_path, context, output_path):
 @app.route("/")
 def index():
     reports = WeeklyReport.query.order_by(WeeklyReport.date.desc(), WeeklyReport.id.desc()).all()
-    return render_template("list.html", reports=reports)
+    remark_map = {}
+    if reports:
+        ids = [r.id for r in reports]
+        remarks = ReportRemark.query.filter(ReportRemark.report_id.in_(ids)).all()
+        remark_map = {r.report_id: r.content or "" for r in remarks}
+
+    return render_template("list.html", reports=reports, remark_map=remark_map)
 
 
 @app.route("/report/new", methods=["GET", "POST"])
@@ -311,6 +331,24 @@ def duplicate_report(report_id):
     db.session.commit()
     flash("周报已复制，您可以继续修改。", "success")
     return redirect(url_for("edit_report", report_id=duplicate.id))
+
+
+@app.route("/report/<int:report_id>/remark", methods=["POST"])
+def update_remark(report_id):
+    """Create or update remark for a report."""
+    WeeklyReport.query.get_or_404(report_id)  # ensure report exists
+    content = request.form.get("remark") or ""
+
+    remark = ReportRemark.query.filter_by(report_id=report_id).first()
+    if remark:
+        remark.content = content
+    else:
+        remark = ReportRemark(report_id=report_id, content=content)
+        db.session.add(remark)
+
+    db.session.commit()
+    flash("备注已保存", "success")
+    return redirect(url_for("index"))
     
 @app.route("/report/<int:report_id>/delete", methods=["POST"])
 def delete_report(report_id):
