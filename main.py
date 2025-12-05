@@ -295,6 +295,22 @@ def export_report(report_id):
         as_attachment=True,
         download_name=filename
     )
+
+
+@app.route("/report/<int:report_id>/duplicate", methods=["POST"])
+def duplicate_report(report_id):
+    """Copy an existing report into a new record and jump to edit page."""
+    source = WeeklyReport.query.get_or_404(report_id)
+    duplicate = WeeklyReport(
+        name=source.name,
+        date=source.date,
+        summary=source.summary,
+        plan=source.plan,
+    )
+    db.session.add(duplicate)
+    db.session.commit()
+    flash("周报已复制，您可以继续修改。", "success")
+    return redirect(url_for("edit_report", report_id=duplicate.id))
     
 @app.route("/report/<int:report_id>/delete", methods=["POST"])
 def delete_report(report_id):
