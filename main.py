@@ -304,14 +304,9 @@ def delete_report(report_id):
     flash("周报已删除", "success")
     return redirect(url_for("index"))
 
-def open_browser():
-    webbrowser.open("http://127.0.0.1:5000/")
-
 
 if __name__ == "__main__":
     with app.app_context():
         init_db()
         
-    # 启动自动打开浏览器（延迟 1 秒，不然服务器还没启动）
-    threading.Timer(1.0, open_browser).start()
     app.run(debug=True)
