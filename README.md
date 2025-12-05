@@ -5,12 +5,12 @@
 ![demo](image.png)
 
 ## 功能
-- 新建 / 编辑 / 删除周报
-- Word（.docx）导出（基于用户模板）
-- 自动打开浏览器
+
+- 新建 / 编辑 / 复制 / 删除周报 / 导出 Word（.docx）（基于用户模板）/ 独立备注
 - 本地 SQLite 存储
 
 ## 字段
+
 - `NAME`（姓名）
 - `DATE`（日期）
 - `SUMMARY`（本周总结，Markdown）
